@@ -15,11 +15,10 @@ describe("Md5 circuit", function () {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0x000000b0,
       ];
 
-    console.log(m_input);
     let witness = await circuit.calculateWitness({
       m: m_input
     });
 
-    console.log(witness);
+    // console.log(witness);
   });
 });

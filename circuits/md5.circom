@@ -304,6 +304,7 @@ template md5(N) {
         FFs[i][0].s <== s_values[count];
         FFs[i][0].t <== T_value[count];
 
+        log("ff ", FFs[i][0].A_out);
         for (var k = 1; k < 16; k++) {
             // magical...
             FFs[i][k].A_in <== FFs[i][k - 1].D_out;
@@ -388,22 +389,22 @@ template md5(N) {
         }
         addA[i] = AddMod32();
         addA[i].a <== A[i];
-        addA[i].b <== IIs[i][15].A_out;
+        addA[i].b <== A[0];
         A[i + 1] <== addA[i].c;
 
         addB[i] = AddMod32();
         addB[i].a <== B[i];
-        addB[i].b <== IIs[i][15].B_out;
+        addB[i].b <== B[0];
         B[i + 1] <== addB[i].c;
 
         addC[i] = AddMod32();
         addC[i].a <== C[i];
-        addC[i].b <== IIs[i][15].C_out;
+        addC[i].b <== C[0];
         C[i + 1] <== addC[i].c;
 
         addD[i] = AddMod32();
         addD[i].a <== D[i];
-        addD[i].b <== IIs[i][15].D_out;
+        addD[i].b <== D[0];
         D[i + 1] <== addD[i].c;
     } 
 
