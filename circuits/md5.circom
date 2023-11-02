@@ -407,7 +407,8 @@ template md5(N) {
         D[i + 1] <== addD[i].c;
     } 
 
-
+    log(A[N/16], B[N/16], C[N/16], D[N/16]);
+    hash <-- (A[N/ 16] << 96) | (B[N/16] << 64) | (C[N/16 ] << 32) | D[N/16] ;
 }
 
 component main = md5(16);
