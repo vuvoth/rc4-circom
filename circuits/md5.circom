@@ -51,6 +51,16 @@ template Add2Mod32() {
     r <== z.c;    
 }
 
+function not(a) {
+    var ans = 0;
+    for (var i = 31; i >= 0; i--) {
+        if (a & (1 << i) == 0) {
+            ans += (1 << i);
+        }
+    }
+    return ans;
+}
+
 template FF() {
     signal input A_in;
     signal input B_in;
@@ -70,7 +80,9 @@ template FF() {
     // a = b + ((a + F(b, c, d) + X[k] + T[i]) <<< s)
     
     signal f; 
-    f <-- (B_in & C_in)  | (~B_in & D_in);
+    f <-- (B_in & C_in) | (not(B_in) & D_in);
+
+    log(A_in, B_in, " ", f);
 
     component add2 = Add2Mod32();
     add2.a <== A_in;
@@ -111,7 +123,7 @@ template GG() {
     // a = b + ((a + G(b, c, d) + X[k] + T[i]) <<< s)
     
     signal f; 
-    f <-- (B_in & D_in)  | (C_in & ~ D_in);
+    f <-- (B_in & D_in)  | (C_in & not(D_in));
 
     component add2 = Add2Mod32();
     add2.a <== A_in;
@@ -197,7 +209,7 @@ template II() {
     // a = b + ((a + G(b, c, d) + X[k] + T[i]) <<< s)
     
     signal i; 
-    i <-- (C_in ^ (B_in | ~D_in));
+    i <-- (C_in ^ (B_in | not(D_in)));
 
     component add2 = Add2Mod32();
     add2.a <== A_in;
@@ -232,10 +244,10 @@ template md5(N) {
     signal C[N/16 + 1];
     signal D[N/16 + 1];
 
-    A[0] <== 0x01234567;
-    B[0] <== 0x89abcdef;
-    C[0] <== 0xfedcba98;
-    D[0] <== 0x76543210;
+    A[0] <== 0x67452301;
+    B[0] <== 0xefcdab89;
+    C[0] <== 0x98badcfe;
+    D[0] <== 0x10325476;
 
 
     component FFs[N/16][16];
@@ -304,7 +316,6 @@ template md5(N) {
         FFs[i][0].s <== s_values[count];
         FFs[i][0].t <== T_value[count];
 
-        log("ff ", FFs[i][0].A_out);
         for (var k = 1; k < 16; k++) {
             // magical...
             FFs[i][k].A_in <== FFs[i][k - 1].D_out;
@@ -389,27 +400,29 @@ template md5(N) {
         }
         addA[i] = AddMod32();
         addA[i].a <== A[i];
-        addA[i].b <== A[0];
+        addA[i].b <== IIs[i][15].A_out;
         A[i + 1] <== addA[i].c;
 
         addB[i] = AddMod32();
         addB[i].a <== B[i];
-        addB[i].b <== B[0];
+        addB[i].b <== IIs[i][15].B_out;
         B[i + 1] <== addB[i].c;
 
         addC[i] = AddMod32();
         addC[i].a <== C[i];
-        addC[i].b <== C[0];
+        addC[i].b <== IIs[i][15].C_out;
         C[i + 1] <== addC[i].c;
 
         addD[i] = AddMod32();
         addD[i].a <== D[i];
-        addD[i].b <== D[0];
+        addD[i].b <== IIs[i][15].D_out;
         D[i + 1] <== addD[i].c;
     } 
 
+    log(A[0], B[0], C[0], D[0]);
     log(A[N/16], B[N/16], C[N/16], D[N/16]);
     hash <-- (A[N/ 16] << 96) | (B[N/16] << 64) | (C[N/16 ] << 32) | D[N/16] ;
+    log(hash, "hash");
 }
 
 component main = md5(16);
