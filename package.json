@@ -9,8 +9,10 @@
   "author": "Vu Vo",
   "license": "MIT",
   "dependencies": {
+    "charenc": "^0.0.2",
     "circom_tester": "^0.0.20",
     "circomlib": "^2.0.5",
+    "crypt": "^0.0.2",
     "md5": "^2.3.0",
     "mocha": "^10.2.0"
   }

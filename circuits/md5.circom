@@ -53,7 +53,7 @@ template Add2Mod32() {
 
 function not(a) {
     var ans = 0;
-    for (var i = 31; i >= 0; i--) {
+    for (var i = 125; i >= 0; i--) {
         if (a & (1 << i) == 0) {
             ans += (1 << i);
         }
@@ -82,7 +82,6 @@ template FF() {
     signal f; 
     f <-- (B_in & C_in) | (not(B_in) & D_in);
 
-    log(A_in, B_in, " ", f);
 
     component add2 = Add2Mod32();
     add2.a <== A_in;
@@ -93,13 +92,13 @@ template FF() {
     component rotate = Rotate();
     rotate.num <== add2.r;
     rotate.s <== s;
-
+    
     component add = AddMod32();
     add.a <== B_in; 
     add.b <== rotate.rotate_number;
 
     A_out <== add.c;    
-      B_out <== B_in;
+    B_out <== B_in;
     C_out <== C_in;
     D_out <== D_in;
 }
@@ -166,7 +165,7 @@ template HH() {
     // a = b + ((a + G(b, c, d) + X[k] + T[i]) <<< s)
     
     signal h; 
-    h <-- (B_in ^ C_in ^ D_in);
+    h <-- (B_in  ^ C_in ^ D_in);
 
     component add2 = Add2Mod32();
     add2.a <== A_in;
@@ -316,6 +315,9 @@ template md5(N) {
         FFs[i][0].s <== s_values[count];
         FFs[i][0].t <== T_value[count];
 
+     
+           log(FFs[i][0].A_in, FFs[i][0].B_in, FFs[i][0].C_in, FFs[i][0].D_in);
+        log(FFs[i][0].A_out, FFs[i][0].B_out, FFs[i][0].C_out, FFs[i][0].D_out);
         for (var k = 1; k < 16; k++) {
             // magical...
             FFs[i][k].A_in <== FFs[i][k - 1].D_out;
@@ -385,7 +387,8 @@ template md5(N) {
         IIs[i][0].x <== X[i][x_ids[count]];
         IIs[i][0].s <== s_values[count];
         IIs[i][0].t <== T_value[count];
-
+        // log(IIs[i][0].A_in, IIs[i][0].B_in, IIs[i][0].C_in, IIs[i][0].D_in);
+        // log(IIs[i][0].A_out, IIs[i][0].B_out, IIs[i][0].C_out, IIs[i][0].D_out);
          for (var k = 1; k < 16; k++) {
             // magical...
             IIs[i][k].A_in <== IIs[i][k - 1].D_out;
@@ -419,10 +422,8 @@ template md5(N) {
         D[i + 1] <== addD[i].c;
     } 
 
-    log(A[0], B[0], C[0], D[0]);
-    log(A[N/16], B[N/16], C[N/16], D[N/16]);
+    // log(A[N/ 16], B[N/16]  , C[N/16 ] , D[N/16] );
     hash <-- (A[N/ 16] << 96) | (B[N/16] << 64) | (C[N/16 ] << 32) | D[N/16] ;
-    log(hash, "hash");
 }
 
 component main = md5(16);
