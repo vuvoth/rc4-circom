@@ -44,7 +44,7 @@ template Add2Mod32() {
 
     component z = AddMod32();
     z.a <== x.c; 
-    z.b <== x.c;
+    z.b <== y.c;
 
     signal output r; 
 
@@ -92,7 +92,7 @@ template FF() {
     component rotate = Rotate();
     rotate.num <== add2.r;
     rotate.s <== s;
-    
+
     component add = AddMod32();
     add.a <== B_in; 
     add.b <== rotate.rotate_number;
@@ -316,8 +316,6 @@ template md5(N) {
         FFs[i][0].t <== T_value[count];
 
      
-           log(FFs[i][0].A_in, FFs[i][0].B_in, FFs[i][0].C_in, FFs[i][0].D_in);
-        log(FFs[i][0].A_out, FFs[i][0].B_out, FFs[i][0].C_out, FFs[i][0].D_out);
         for (var k = 1; k < 16; k++) {
             // magical...
             FFs[i][k].A_in <== FFs[i][k - 1].D_out;
@@ -332,17 +330,18 @@ template md5(N) {
         }
    
 
-        GGs[i][0].A_in <== FFs[i][15].A_out;
-        GGs[i][0].B_in <== FFs[i][15].B_out; 
-        GGs[i][0].C_in <== FFs[i][15].C_out;
-        GGs[i][0].D_in <== FFs[i][15].D_out;
+
+        GGs[i][0].A_in <== FFs[i][15].D_out;
+        GGs[i][0].B_in <== FFs[i][15].A_out; 
+        GGs[i][0].C_in <== FFs[i][15].B_out;
+        GGs[i][0].D_in <== FFs[i][15].C_out;
 
         count++;
         GGs[i][0].x <== X[i][x_ids[count]];
         GGs[i][0].s <== s_values[count];
         GGs[i][0].t <== T_value[count];
 
-         for (var k = 1; k < 16; k++) {
+        for (var k = 1; k < 16; k++) {
             // magical...
             GGs[i][k].A_in <== GGs[i][k - 1].D_out;
             GGs[i][k].B_in <== GGs[i][k - 1].A_out;
@@ -355,10 +354,10 @@ template md5(N) {
             GGs[i][k].t <== T_value[count]; 
         }
         
-        HHs[i][0].A_in <== GGs[i][15].A_out;
-        HHs[i][0].B_in <== GGs[i][15].B_out; 
-        HHs[i][0].C_in <== GGs[i][15].C_out;
-        HHs[i][0].D_in <== GGs[i][15].D_out;
+        HHs[i][0].A_in <== GGs[i][15].D_out;
+        HHs[i][0].B_in <== GGs[i][15].A_out; 
+        HHs[i][0].C_in <== GGs[i][15].B_out;
+        HHs[i][0].D_in <== GGs[i][15].C_out;
 
         count++;
         HHs[i][0].x <== X[i][x_ids[count]];
@@ -378,18 +377,16 @@ template md5(N) {
             HHs[i][k].t <== T_value[count]; 
         }
 
-        IIs[i][0].A_in <== HHs[i][15].A_out;
-        IIs[i][0].B_in <== HHs[i][15].B_out; 
-        IIs[i][0].C_in <== HHs[i][15].C_out;
-        IIs[i][0].D_in <== HHs[i][15].D_out;
+        IIs[i][0].A_in <== HHs[i][15].D_out;
+        IIs[i][0].B_in <== HHs[i][15].A_out; 
+        IIs[i][0].C_in <== HHs[i][15].B_out;
+        IIs[i][0].D_in <== HHs[i][15].C_out;
 
         count++;
         IIs[i][0].x <== X[i][x_ids[count]];
         IIs[i][0].s <== s_values[count];
         IIs[i][0].t <== T_value[count];
-        // log(IIs[i][0].A_in, IIs[i][0].B_in, IIs[i][0].C_in, IIs[i][0].D_in);
-        // log(IIs[i][0].A_out, IIs[i][0].B_out, IIs[i][0].C_out, IIs[i][0].D_out);
-         for (var k = 1; k < 16; k++) {
+        for (var k = 1; k < 16; k++) {
             // magical...
             IIs[i][k].A_in <== IIs[i][k - 1].D_out;
             IIs[i][k].B_in <== IIs[i][k - 1].A_out;
@@ -403,27 +400,43 @@ template md5(N) {
         }
         addA[i] = AddMod32();
         addA[i].a <== A[i];
-        addA[i].b <== IIs[i][15].A_out;
+        addA[i].b <== IIs[i][15].D_out;
         A[i + 1] <== addA[i].c;
 
         addB[i] = AddMod32();
         addB[i].a <== B[i];
-        addB[i].b <== IIs[i][15].B_out;
+        addB[i].b <== IIs[i][15].A_out;
         B[i + 1] <== addB[i].c;
 
         addC[i] = AddMod32();
         addC[i].a <== C[i];
-        addC[i].b <== IIs[i][15].C_out;
+        addC[i].b <== IIs[i][15].B_out;
         C[i + 1] <== addC[i].c;
 
         addD[i] = AddMod32();
         addD[i].a <== D[i];
-        addD[i].b <== IIs[i][15].D_out;
+        addD[i].b <== IIs[i][15].C_out;
         D[i + 1] <== addD[i].c;
     } 
 
-    // log(A[N/ 16], B[N/16]  , C[N/16 ] , D[N/16] );
-    hash <-- (A[N/ 16] << 96) | (B[N/16] << 64) | (C[N/16 ] << 32) | D[N/16] ;
+    var n = N / 16;
+    var a = to_bigendian(A[n]);
+    var b = to_bigendian(B[n]);
+    var c = to_bigendian(C[n]);
+    var d = to_bigendian(D[n]);
+    hash <-- (a << 96) | (b << 64) | (c << 32) | d;
 }
 
+
+function to_bigendian(word) {
+    return rl(word, 8) & 0x00FF00FF | rr(word, 8) & 0xFF00FF00; 
+}
+
+function rl(word, b) {
+     return (word << b) | (word >> (32 - b));
+}
+
+function rr(word, b) {
+    return (word << (32 - b)) | (word >> b);
+}
 component main = md5(16);
